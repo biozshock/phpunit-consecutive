@@ -1,0 +1,103 @@
+name: 'Continuous integration'
+on: ['push', 'pull_request']
+jobs:
+  cs:
+    runs-on: 'ubuntu-latest'
+    name: 'Coding style'
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Setup PHP'
+        uses: 'shivammathur/setup-php@v2'
+        with:
+          php-version: '8.1'
+          coverage: 'none'
+          extensions: 'json, mbstring, tokenizer, composer:v2'
+          tools: 'composer-normalize'
+
+      - name: "Install Composer dependencies"
+        uses: "ramsey/composer-install@v3"
+        with:
+          composer-options: "--prefer-dist --prefer-stable"
+
+      - name: 'Display tools versions'
+        run: |
+          composer-normalize --version
+          ./vendor/bin/php-cs-fixer --version
+
+      - name: 'Check with PHP-cs-fixer'
+        run: './vendor/bin/php-cs-fixer fix --diff --dry-run --allow-risky=yes --using-cache=no'
+
+      - name: 'Check with rector'
+        run: './vendor/bin/rector --dry-run'
+
+      - name: 'Check composer.json'
+        run: 'composer-normalize --diff --dry-run --no-update-lock'
+        if: 'always()'
+
+  phpunit:
+    runs-on: 'ubuntu-latest'
+    name: 'PHPUnit and PHPStan (PHP ${{ matrix.php }})'
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+          - '8.2'
+          - '8.3'
+          - '8.4'
+      fail-fast: false
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Setup PHP'
+        uses: 'shivammathur/setup-php@v2'
+        with:
+          php-version: '${{ matrix.php }}'
+          coverage: 'none'
+          tools: 'pecl, composer:v2, flex'
+          extensions: 'curl, json, mbstring, mongodb, openssl'
+
+      - name: "Install Composer dependencies"
+        uses: "ramsey/composer-install@v3"
+        with:
+          composer-options: "--prefer-dist --prefer-stable"
+
+      - name: 'Run unit tests'
+        run: |
+          vendor/bin/phpunit
+
+  phpstan:
+    runs-on: 'ubuntu-latest'
+    name: 'PHPStan (PHP ${{ matrix.php }})'
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+          - '8.2'
+          - '8.3'
+          - '8.4'
+      fail-fast: false
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Setup PHP'
+        uses: 'shivammathur/setup-php@v2'
+        with:
+          php-version: '${{ matrix.php }}'
+          coverage: 'none'
+          tools: 'pecl, composer:v2, flex'
+          extensions: 'curl, json, mbstring, mongodb, openssl'
+
+      - name: "Install Composer dependencies"
+        uses: "ramsey/composer-install@v3"
+        with:
+          composer-options: "--prefer-dist --prefer-stable"
+
+      - name: 'Run PHPStan'
+        run: |
+          vendor/bin/phpstan

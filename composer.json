@@ -1,0 +1,32 @@
+{
+    "name": "biozshock/phpunit-consecutive",
+    "description": "Utility class to replace phpunit withConsecutive",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "phpunit",
+        "consecutive",
+        "dev"
+    ],
+    "require": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.70",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^10.0",
+        "rector/rector": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Biozshock\\PhpunitConsecutive\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Biozshock\\PhpunitConsecutive\\Tests\\": "tests/"
+        }
+    }
+}
