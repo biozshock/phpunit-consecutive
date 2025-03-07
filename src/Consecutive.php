@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Biozshock\PhpunitConsecutive;
 
 use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\Constraint\Constraint;
 
 class Consecutive
 {
@@ -24,6 +25,11 @@ class Consecutive
             $return = array_pop($expectedParameters);
             $arguments = func_get_args();
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
+                if ($expectedParameter instanceof Constraint) {
+                    $expectedParameter->evaluate($arguments[$parameterIndex]);
+                    continue;
+                }
+
                 Assert::assertEquals($expectedParameter, $arguments[$parameterIndex]);
             }
 
@@ -48,6 +54,11 @@ class Consecutive
             $expectedParameters = $map[$index];
             $arguments = func_get_args();
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
+                if ($expectedParameter instanceof Constraint) {
+                    $expectedParameter->evaluate($arguments[$parameterIndex]);
+                    continue;
+                }
+
                 Assert::assertEquals($expectedParameter, $arguments[$parameterIndex]);
             }
 
