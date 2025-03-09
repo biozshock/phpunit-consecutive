@@ -6,7 +6,7 @@ composer require --dev biozshock/phpunit-consecutive
 ```
 
 ## Usage
-When you need to mock the return.
+When you need to mock the method which returns a value.
 ```php
 $mock->method('add')
     ->withConsecutive($a, $b)
@@ -18,7 +18,19 @@ $mock->method('add')
     ->willRecturnCallback(Consecutive::consecutiveMap([
         [$a, 1],
         [$b, 2]
-    ]))
+    ]));
+```
+Or return callback, which accepts given previous arguments:
+```php
+$mock->method('add')
+    ->willRecturnCallback(Consecutive::consecutiveMap([
+        [$a, $b, static function (int $a, string $b): bool {
+            return $a === (int) $b;
+        }],
+        [$c, $d, static function (int $c, string $d): bool {
+            return str_starts_with($d, (string) $c);
+        }]
+    ]));
 ```
 
 Otherwise, when mocked method returns `void`.
@@ -32,5 +44,5 @@ $mock->method('add')
     ->willRecturnCallback(Consecutive::consecutiveCall([
         [$a],
         [$b]
-    ]))
+    ]));
 ```

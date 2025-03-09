@@ -6,6 +6,7 @@ namespace Biozshock\PhpunitConsecutive\Tests;
 
 use Biozshock\PhpunitConsecutive\Consecutive;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Bar;
+use Biozshock\PhpunitConsecutive\Tests\Fixtures\Baz;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Foo;
 use PHPUnit\Framework\TestCase;
 
@@ -59,5 +60,22 @@ class ConsecutiveTest extends TestCase
 
         $bar = new Bar($foo);
         $bar->stub(new \stdClass(), 0);
+    }
+
+    public function testConsecutiveCallbackReturn(): void
+    {
+        $foo = $this->createMock(Foo::class);
+        $foo->expects($this->once())
+            ->method('map')
+            ->willReturnCallback(Consecutive::consecutiveMap([
+                [new \stdClass(), 1, static function (\stdClass $object, int $integer): \stdClass {
+                    $object->integer = $integer;
+
+                    return $object;
+                }],
+            ]));
+
+        $bar = new Baz($foo);
+        $bar->call(new \stdClass(), 1);
     }
 }

@@ -35,6 +35,10 @@ class Consecutive
 
             ++$index;
 
+            if (is_callable($return)) {
+                return call_user_func_array($return, $arguments);
+            }
+
             return $return;
         };
     }
