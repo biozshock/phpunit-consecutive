@@ -20,7 +20,7 @@ $mock->method('add')
         [$b, 2]
     ]));
 ```
-Or return callback, which accepts given previous arguments:
+Or return callback, which accepts given arguments:
 ```php
 $mock->method('add')
     ->willRecturnCallback(Consecutive::consecutiveMap([
@@ -31,6 +31,14 @@ $mock->method('add')
             return str_starts_with($d, (string) $c);
         }]
     ]));
+```
+Also, you can test methods that return one of arguments. In this example the test expects zero-index argument `$a` to be returned:
+```php
+$mock->method('add')
+    ->willRecturnCallback(Consecutive::consecutiveMap([
+        [$a, $b],
+        [$a, $d]
+    ], 0));
 ```
 
 Otherwise, when mocked method returns `void`.

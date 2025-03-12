@@ -11,4 +11,4 @@ parameters:
     ignoreErrors:
         - identifier: staticMethod.dynamicCall # this will be not needed with PHPUnit 11
           path: tests/ConsecutiveTest.php
-          count: 5
+          count: 6

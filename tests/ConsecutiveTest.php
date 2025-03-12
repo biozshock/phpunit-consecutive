@@ -8,6 +8,7 @@ use Biozshock\PhpunitConsecutive\Consecutive;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Bar;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Baz;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Foo;
+use Biozshock\PhpunitConsecutive\Tests\Fixtures\Qux;
 use PHPUnit\Framework\TestCase;
 
 class ConsecutiveTest extends TestCase
@@ -77,5 +78,24 @@ class ConsecutiveTest extends TestCase
 
         $bar = new Baz($foo);
         $bar->call(new \stdClass(), 1);
+    }
+
+    public function testConsecutiveArgumentReturn(): void
+    {
+        $add = 8;
+        $sequentialAdd = 15;
+        $class = new \stdClass();
+        $class->integer = 15;
+        $foo = $this->createMock(Foo::class);
+        $foo->expects($this->exactly(2))
+            ->method('map')
+            ->willReturnCallback(Consecutive::consecutiveMapReturn([
+                [$class, $add],
+                [$class, $sequentialAdd],
+            ], 0));
+
+        $qux = new Qux($foo);
+        $result = $qux->stub($class, $add);
+        self::assertSame($class, $result);
     }
 }

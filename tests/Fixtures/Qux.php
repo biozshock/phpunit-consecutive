@@ -1,20 +1,18 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Biozshock\PhpunitConsecutive\Tests\Fixtures;
 
-class Baz
+class Qux
 {
     public function __construct(private readonly Foo $foo)
     {
     }
 
-    public function call(\stdClass $object, int $integer): int
+    public function stub(\stdClass $object, int $integer): \stdClass
     {
         $object = $this->foo->map($object, $integer);
         \assert(is_int($object->integer));
 
-        return $object->integer;
+        return $this->foo->map($object, $object->integer);
     }
 }
