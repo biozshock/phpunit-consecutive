@@ -49,7 +49,7 @@ class Consecutive
      * If the `void` expected to be returned, then use consecutiveCall
      *
      * @param array<array<mixed>> $map
-     * @param int $returnIndex The index of the returned argument.
+     * @param int                 $returnIndex the index of the returned argument
      */
     public static function consecutiveMapReturn(array $map, int $returnIndex): \Closure
     {
@@ -62,8 +62,8 @@ class Consecutive
                 throw new \InvalidArgumentException('The return parameter at index "'.$returnIndex.'" does not exist.');
             }
 
-            $return = $expectedParameters[$returnIndex];
             $arguments = func_get_args();
+            $return = $arguments[$returnIndex];
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
                 if ($expectedParameter instanceof Constraint) {
                     $expectedParameter->evaluate($arguments[$parameterIndex]);

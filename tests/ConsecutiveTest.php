@@ -90,7 +90,7 @@ class ConsecutiveTest extends TestCase
         $foo->expects($this->exactly(2))
             ->method('map')
             ->willReturnCallback(Consecutive::consecutiveMapReturn([
-                [$class, $add],
+                [self::equalTo($class), $add],
                 [$class, $sequentialAdd],
             ], 0));
 
