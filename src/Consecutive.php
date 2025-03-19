@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Biozshock\PhpunitConsecutive;
 
+use Biozshock\PhpunitConsecutive\Exception\NoMoreValuesConfiguredException;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Constraint\Constraint;
 
@@ -21,6 +22,10 @@ class Consecutive
         $index = 0;
 
         return static function () use (&$index, $map) {
+            if (!isset($map[$index])) {
+                throw new NoMoreValuesConfiguredException($index, count($map));
+            }
+
             $expectedParameters = $map[$index];
             $return = array_pop($expectedParameters);
             $arguments = func_get_args();
@@ -56,6 +61,10 @@ class Consecutive
         $index = 0;
 
         return static function () use ($returnIndex, &$index, $map) {
+            if (!isset($map[$index])) {
+                throw new NoMoreValuesConfiguredException($index, count($map));
+            }
+
             $expectedParameters = $map[$index];
 
             if (!isset($expectedParameters[$returnIndex])) {
@@ -91,6 +100,10 @@ class Consecutive
         $index = 0;
 
         return static function () use (&$index, $map): void {
+            if (!isset($map[$index])) {
+                throw new NoMoreValuesConfiguredException($index, count($map));
+            }
+
             $expectedParameters = $map[$index];
             $arguments = func_get_args();
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
