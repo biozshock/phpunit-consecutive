@@ -6,6 +6,7 @@ namespace Biozshock\PhpunitConsecutive\Tests;
 
 use Biozshock\PhpunitConsecutive\Consecutive;
 use Biozshock\PhpunitConsecutive\Exception\NoMoreValuesConfiguredException;
+use Biozshock\PhpunitConsecutive\Exception\TooManyValuesConfiguredException;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Bar;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Baz;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Foo;
@@ -106,7 +107,7 @@ class ConsecutiveTest extends TestCase
         $quux->stub($object1, 0);
     }
 
-    public function testConsecutiveMapNoMoValues(): void
+    public function testConsecutiveMapNoMoreValues(): void
     {
         $object1 = new \stdClass();
         $object1->integer = 1;
@@ -124,6 +125,26 @@ class ConsecutiveTest extends TestCase
             ]));
 
         $this->expectException(NoMoreValuesConfiguredException::class);
+
+        $bar = new Bar($foo);
+        $bar->stub(new \stdClass(), 0);
+    }
+
+    public function testConsecutiveMapTooManyValues(): void
+    {
+        $object1 = new \stdClass();
+        $object1->integer = 1;
+
+        $foo = $this->createMock(Foo::class);
+        $foo->expects($this->any())
+            ->method('map')
+            ->willReturnCallback(Consecutive::consecutiveMap([
+                [new \stdClass(), 0, $object1, 'Extra one'],
+            ]));
+        $foo->expects($this->never())
+            ->method('call');
+
+        $this->expectException(TooManyValuesConfiguredException::class);
 
         $bar = new Bar($foo);
         $bar->stub(new \stdClass(), 0);
@@ -150,6 +171,29 @@ class ConsecutiveTest extends TestCase
             ]));
 
         $this->expectException(NoMoreValuesConfiguredException::class);
+
+        $bar = new Bar($foo);
+        $bar->stub(new \stdClass(), 0);
+    }
+
+    public function testConsecutiveCallTooManyValues(): void
+    {
+        $object1 = new \stdClass();
+        $object1->integer = 1;
+
+        $foo = $this->createMock(Foo::class);
+        $foo->expects($this->once())
+            ->method('map')
+            ->willReturnCallback(Consecutive::consecutiveMap([
+                [self::equalTo(new \stdClass()), self::logicalAnd(self::lessThan(1), self::greaterThanOrEqual(0)), $object1],
+            ]));
+        $foo->expects($this->once())
+            ->method('call')
+            ->willReturnCallback(Consecutive::consecutiveCall([
+                [$object1, self::equalTo(1), 'Extra one'],
+            ]));
+
+        $this->expectException(TooManyValuesConfiguredException::class);
 
         $bar = new Bar($foo);
         $bar->stub(new \stdClass(), 0);
@@ -214,6 +258,25 @@ class ConsecutiveTest extends TestCase
             ], 0));
 
         $this->expectException(NoMoreValuesConfiguredException::class);
+
+        $qux = new Qux($foo);
+        $result = $qux->stub($class, $add);
+        self::assertSame($class, $result);
+    }
+
+    public function testConsecutiveMapReturnTooManyValues(): void
+    {
+        $add = 8;
+        $class = new \stdClass();
+        $class->integer = 15;
+        $foo = $this->createMock(Foo::class);
+        $foo->expects($this->any())
+            ->method('map')
+            ->willReturnCallback(Consecutive::consecutiveMapReturn([
+                [self::equalTo($class), $add, 'Extra one'],
+            ], 0));
+
+        $this->expectException(TooManyValuesConfiguredException::class);
 
         $qux = new Qux($foo);
         $result = $qux->stub($class, $add);

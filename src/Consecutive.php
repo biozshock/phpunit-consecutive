@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Biozshock\PhpunitConsecutive;
 
 use Biozshock\PhpunitConsecutive\Exception\NoMoreValuesConfiguredException;
+use Biozshock\PhpunitConsecutive\Exception\TooManyValuesConfiguredException;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Constraint\Constraint;
 
@@ -31,6 +32,11 @@ class Consecutive
             $arguments = func_get_args();
             // Move to the next index here, so in case of an Exception in the Constraint consecutive can catch next set.
             ++$index;
+
+            if (count($arguments) < count($expectedParameters)) {
+                throw new TooManyValuesConfiguredException($index, count($arguments), count($expectedParameters));
+            }
+
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
                 if ($expectedParameter instanceof Constraint) {
                     $expectedParameter->evaluate($arguments[$parameterIndex]);
@@ -75,6 +81,11 @@ class Consecutive
             $return = $arguments[$returnIndex];
             // Move to the next index here, so in case of an Exception in the Constraint consecutive can catch next set.
             ++$index;
+
+            if (count($arguments) < count($expectedParameters)) {
+                throw new TooManyValuesConfiguredException($index, count($arguments), count($expectedParameters));
+            }
+
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
                 if ($expectedParameter instanceof Constraint) {
                     $expectedParameter->evaluate($arguments[$parameterIndex]);
@@ -106,8 +117,14 @@ class Consecutive
 
             $expectedParameters = $map[$index];
             $arguments = func_get_args();
+
             // Move to the next index here, so in case of an Exception in the Constraint consecutive can catch next set.
             ++$index;
+
+            if (count($arguments) < count($expectedParameters)) {
+                throw new TooManyValuesConfiguredException($index, count($arguments), count($expectedParameters));
+            }
+
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
                 if ($expectedParameter instanceof Constraint) {
                     $expectedParameter->evaluate($arguments[$parameterIndex]);
