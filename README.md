@@ -1,5 +1,25 @@
 # Repository provides utility class: "replacement" for removed `withConsecutive` from PHPUnit. 
 
+## Why?
+[In the issue of PHPUnit](https://github.com/sebastianbergmann/phpunit/issues/4026) there are several 
+possibilities to replace missing functionality `withConsecutive` of PHPUnit.
+Most of the comments use some sort of the callback:
+```php
+$expectedArguments = [
+    ...
+]
+->withConsecutive(function ($arg1, $arg2) use (&$index) {
+    if ($index === 0) {
+        self::assertEquals('some', $arg1);
+        ...
+    }
+});
+```
+Eventually i've got sick of writing such code. Writing boilerplate and repeating yourself is no fun.
+
+The class solve also the issue, where you need to operate with arguments <-> return value relation.
+Giving the developer an ability to define what's returned with each argument set.
+
 ## Install
 ```bash
 composer require --dev biozshock/phpunit-consecutive
