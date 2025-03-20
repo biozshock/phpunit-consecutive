@@ -9,12 +9,13 @@ use Biozshock\PhpunitConsecutive\Exception\NoMoreValuesConfiguredException;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Bar;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Baz;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Foo;
+use Biozshock\PhpunitConsecutive\Tests\Fixtures\Quux;
 use Biozshock\PhpunitConsecutive\Tests\Fixtures\Qux;
 use PHPUnit\Framework\TestCase;
 
 class ConsecutiveTest extends TestCase
 {
-    public function testConsecutiveReal(): void
+    public function testConsecutiveMapReal(): void
     {
         $object1 = new \stdClass();
         $object1->integer = 1;
@@ -39,7 +40,7 @@ class ConsecutiveTest extends TestCase
         $bar->stub(new \stdClass(), 0);
     }
 
-    public function testConsecutiveConstraint(): void
+    public function testConsecutiveMapConstraint(): void
     {
         $object1 = new \stdClass();
         $object1->integer = 1;
@@ -62,6 +63,47 @@ class ConsecutiveTest extends TestCase
 
         $bar = new Bar($foo);
         $bar->stub(new \stdClass(), 0);
+    }
+
+    public function testConsecutiveMapCallbackReturn(): void
+    {
+        $foo = $this->createMock(Foo::class);
+        $foo->expects($this->once())
+            ->method('map')
+            ->willReturnCallback(Consecutive::consecutiveMap([
+                [new \stdClass(), 1, static function (\stdClass $object, int $integer): \stdClass {
+                    $object->integer = $integer;
+
+                    return $object;
+                }],
+            ]));
+
+        $bar = new Baz($foo);
+        $bar->call(new \stdClass(), 1);
+    }
+
+    public function testConsecutiveMapCallbackException(): void
+    {
+        $object1 = new \stdClass();
+        $object1->integer = 1;
+        $object2 = new \stdClass();
+        $object2->integer = 2;
+
+        $foo = $this->createMock(Foo::class);
+        $foo->expects($this->exactly(2))
+            ->method('map')
+            ->willReturnCallback(Consecutive::consecutiveMap([
+                [$this->callback(function (): never {
+                    throw new \LogicException('The test.');
+                }), 1],
+                [$object1, 10, $object2],
+            ]));
+        $foo->expects($this->once())
+            ->method('call')
+            ->with($object2, 20);
+
+        $quux = new Quux($foo);
+        $quux->stub($object1, 0);
     }
 
     public function testConsecutiveMapNoMoValues(): void
@@ -113,24 +155,34 @@ class ConsecutiveTest extends TestCase
         $bar->stub(new \stdClass(), 0);
     }
 
-    public function testConsecutiveCallbackReturn(): void
+    public function testConsecutiveCallCallbackException(): void
     {
+        $object1 = new \stdClass();
+        $object1->integer = 1;
+        $object2 = new \stdClass();
+        $object2->integer = 2;
+
         $foo = $this->createMock(Foo::class);
-        $foo->expects($this->once())
+        $foo->expects($this->exactly(2))
             ->method('map')
             ->willReturnCallback(Consecutive::consecutiveMap([
-                [new \stdClass(), 1, static function (\stdClass $object, int $integer): \stdClass {
-                    $object->integer = $integer;
-
-                    return $object;
-                }],
+                [self::equalTo(new \stdClass()), 0, $object1],
+                [$object1, 10, $object2],
+            ]));
+        $foo->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnCallback(Consecutive::consecutiveCall([
+                [$this->callback(function (): never {
+                    throw new \LogicException('The test.');
+                }), 1],
+                [$object2, 20],
             ]));
 
-        $bar = new Baz($foo);
-        $bar->call(new \stdClass(), 1);
+        $quux = new Quux($foo);
+        $quux->stub(new \stdClass(), 0);
     }
 
-    public function testConsecutiveArgumentReturn(): void
+    public function testConsecutiveMapReturnArgument(): void
     {
         $add = 8;
         $sequentialAdd = 15;
@@ -149,7 +201,7 @@ class ConsecutiveTest extends TestCase
         self::assertSame($class, $result);
     }
 
-    public function testConsecutiveMspReturnNoMoreValues(): void
+    public function testConsecutiveMapReturnNoMoreValues(): void
     {
         $add = 8;
         $class = new \stdClass();
@@ -166,5 +218,27 @@ class ConsecutiveTest extends TestCase
         $qux = new Qux($foo);
         $result = $qux->stub($class, $add);
         self::assertSame($class, $result);
+    }
+
+    public function testConsecutiveMapReturnCallbackException(): void
+    {
+        $object1 = new \stdClass();
+        $object1->integer = 1;
+
+        $foo = $this->createMock(Foo::class);
+        $foo->expects($this->exactly(2))
+            ->method('map')
+            ->willReturnCallback(Consecutive::consecutiveMapReturn([
+                [$this->callback(function (): never {
+                    throw new \LogicException('The test.');
+                }), 1],
+                [$object1, 10],
+            ], 0));
+        $foo->expects($this->once())
+            ->method('call')
+            ->with($object1, 10);
+
+        $quux = new Quux($foo);
+        $quux->stub($object1, 0);
     }
 }
