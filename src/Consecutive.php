@@ -29,16 +29,16 @@ class Consecutive
             $expectedParameters = $map[$index];
             $return = array_pop($expectedParameters);
             $arguments = func_get_args();
+            // Move to the next index here, so in case of an Exception in the Constraint consecutive can catch next set.
+            ++$index;
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
                 if ($expectedParameter instanceof Constraint) {
                     $expectedParameter->evaluate($arguments[$parameterIndex]);
                     continue;
                 }
 
-                Assert::assertEquals($expectedParameter, $arguments[$parameterIndex]);
+                Assert::assertEquals($expectedParameter, $arguments[$parameterIndex], 'Invocation #'.$index);
             }
-
-            ++$index;
 
             if (is_callable($return)) {
                 return call_user_func_array($return, $arguments);
@@ -73,16 +73,16 @@ class Consecutive
 
             $arguments = func_get_args();
             $return = $arguments[$returnIndex];
+            // Move to the next index here, so in case of an Exception in the Constraint consecutive can catch next set.
+            ++$index;
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
                 if ($expectedParameter instanceof Constraint) {
                     $expectedParameter->evaluate($arguments[$parameterIndex]);
                     continue;
                 }
 
-                Assert::assertEquals($expectedParameter, $arguments[$parameterIndex]);
+                Assert::assertEquals($expectedParameter, $arguments[$parameterIndex], 'Invocation #'.$index);
             }
-
-            ++$index;
 
             return $return;
         };
@@ -106,16 +106,16 @@ class Consecutive
 
             $expectedParameters = $map[$index];
             $arguments = func_get_args();
+            // Move to the next index here, so in case of an Exception in the Constraint consecutive can catch next set.
+            ++$index;
             foreach ($expectedParameters as $parameterIndex => $expectedParameter) {
                 if ($expectedParameter instanceof Constraint) {
                     $expectedParameter->evaluate($arguments[$parameterIndex]);
                     continue;
                 }
 
-                Assert::assertEquals($expectedParameter, $arguments[$parameterIndex]);
+                Assert::assertEquals($expectedParameter, $arguments[$parameterIndex], 'Invocation #'.$index);
             }
-
-            ++$index;
         };
     }
 }
